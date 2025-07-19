@@ -103,4 +103,28 @@ const MarketValue = async (req, res) => {
 
 }
 
-module.exports = { VerifyPlate, VinVerify, VehicleHistory, MarketValue };
+const MotorcycleCheck = async (req, res) => {
+    const {vin} = req.body;
+
+    if (!vin) return res.status(http.StatusCodes.BAD_REQUEST).json({ error: 'VIN required' });
+
+    try {
+        const response = await axios.get(`https://api.vehicledatabases.com/motorcycle-decode/${vin}`, {
+            headers: {
+                "x-AuthKey": "864f609255f911f096100242ac120002"
+            }
+        })
+
+        const data = await response.data;
+
+        return res.status(http.StatusCodes.OK).json(data);
+    } catch (err) {
+        console.log(err.status);
+        if (err.status === 400) {
+            return res.status(http.StatusCodes.BAD_REQUEST).json({ msg: 'No record found' });
+        }
+        return res.status(http.StatusCodes.INTERNAL_SERVER_ERROR).json(err.message);
+    }
+}
+
+module.exports = { VerifyPlate, VinVerify, VehicleHistory, MarketValue, MotorcycleCheck };
